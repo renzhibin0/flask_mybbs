@@ -1,0 +1,143 @@
+# web服务器和应用服务器以及web应用框架：
+
+### web服务器：
+负责处理http请求，响应静态文件，常见的有Apache，Nginx以及微软的IIS.
+
+### 应用服务器：
+负责处理逻辑的服务器。比如php、python的代码，是不能直接通过nginx这种web服务器来处理的，只能通过应用服务器来处理，常见的应用服务器有uwsgi、tomcat等。
+
+### web应用框架：
+一般使用某种语言，封装了常用的web功能的框架就是web应用框架，flask、Django以及Java中的SSH(Structs2+Spring3+Hibernate3)框架都是web应用框架。
+
+nginx：一个http服务器，用来接收用户的请求。
+uwsgi：用来处理python代码的应用服务器。
+supervisor：这个不是必须的，但是为了让我们的网站运行更加稳定，
+在出现uwsgi异常退出的时候，supervisor可以让这个服务马上起来。即作为守护进程使用。
+
+参考文章https://mp.weixin.qq.com/s?__biz=MzIzNTgxMzI2OA==&mid=2247483664&idx=1&sn=
+8743bb426bc504477f3212658fa1297a&chksm=e8e021ebdf97a8fd8c50148bd9ed3119ad33bd3eadf
+b857a5e071552a47b6251f864278e3446&mpshare=1&scene=24&srcid=0927cOSseTh1PvAGdC1lqHxx#rd
+
+flask部署uwsgi()
+  uwsgi是一个应用服务器，非静态文件的网络请求必须通过它完成，它可以充当静态文件服务器，
+	
+  项目文件下新建uwsgi.ini
+
+    ########################
+	[uwsgi]
+	# 网络端口
+	http=0.0.0.0:5000
+	# 项目文件目录
+	chdir = /home/roo/python_project/flask_mybbs/
+	# 虚拟环境设置
+	home=/root/flask_mybbs
+	# 日志输出文件
+	daemonize = /home/roo/python_project/flask_mybbs/log/1.log
+	# 主程序文件
+	wsgi-file=mybbs.py
+	master=true
+	# socket绝对路径,#对应nginx配置文件中的转发端口
+  socket=127.0.0.1:8080
+  # 设置socket权限
+  chmod-socket=666
+  chown-socket = root:nginx
+	callable=app
+	processes = 10
+	threads=4
+	# 退出的时候是否清理环境
+	vaccum=true
+    ##########################
+	在项目目录下使用uwsgi uwsgi.ini启动
+
+##################################################################################################
+
+flask部署nginx()
+   1.nginx是一个web服务器，用来加载静态文件和接收http请求的，通过命令'yum install nginx'即可安装。
+   2.nginx常用命令：
+    启动、停止nginx
+    nginx 
+    nginx -s stop
+    nginx -s quit
+    nginx -s reload
+    nginx -s quit:此方式停止步骤是待nginx进程处理任务完毕进行停止。
+    nginx -s stop:此方式相当于先查出nginx进程id再使用kill命令强制杀掉进程。
+
+   3.收集静态文件：
+     config文件中有'STATIC_ROOT'配置，这个配置指定你的静态文件要放到哪个目录下,
+     我们通过命令 'Python manage.py collectstatic'收集所有静态文件，将这些文件放在指定的目录下。
+    4.编写nginx配置文件：
+     在'/etc/nignx/conf.d'目录下，新建一个文件，叫做'flask_mybbs.conf'
+
+####python
+# /etc/nginx/conf.d/flask_mybbs.conf
+# 配置服务器
+server{
+    # 监听端口
+		listen:80;
+		# 域名 www.sky.com sky.com 公网IP;
+		server_name 192.168.126.129;
+		charset utf-8;
+    root /usr/share/nginx/html;
+		# 最大文件上传尺寸
+		client_max_body_size 75M;
+
+		# 静态文件访问的url
+		location /static{
+		    # 静态文件地址
+		    alias /home/roo/python_project/flask_mybbs/static;
+		}
+    include /etc/nginx/default.d/*.conf;
+		# 最后，发送所有非静态文件请求到flask服务器
+		location / {
+		    # uwsgi_params文件地址
+		    include /etc/nginx/uwsgi_params;
+        uwsgi_pass   127.0.0.1:5000;  # 指向uwsgi 所应用的内部地址,所有请求将转发给uwsgi 处理
+        uwsgi_param UWSGI_PYHOME /root/flask_mybbs; # 指向虚拟环境目录
+        uwsgi_param UWSGI_CHDIR  /home/roo/python_project/flask_mybbs; # 指向网站根目录
+        uwsgi_param UWSGI_SCRIPT mybbs:app; # 指定启动程序
+		}
+}
+     ####
+     
+     写完配置文件后，为了测试配置文件是否设置成功，运行'nginx -t',如果不报错，则成功。
+     每次修改完了配置文件，需要运行'nginx -s reload'
+
+
+********************************************************************************
+未使用
+Flask部署supervisor(python2.4)
+    让supervisor管理uwsgi，可以在uwsgi发生意外时，自动重启；
+    1.'supervisor'安装,在Python环境中'pip install supervisor'
+    2.在项目的根目录下创建一个文件叫'mybbs_supervisor.conf',内容如下：
+      '''python
+	  # supervisor的程序名字
+	  [program:mysite]
+	  # supervisor执行的命令
+	  command=uwsgi uwsgi.ini
+	  # 项目的目录
+	  directory=/home/roo/python_project/flask_mybbs
+	  # 开始的时候等待多少秒
+	  stopwaitsecs=0
+	  autostart=true
+	  # 程序挂了后自动重启
+	  autorestart=true
+	  # 输出的log文件
+	  stdout_logfile=/home/roo/python_project/flask_mybbs/log/supervisord.log
+	  # 输出的err文件
+	  stderr_logfile=/home/roo/python_project/flask_mybbs/log/supervisord.err
+      '''
+***********************************************************************************
+
+       # 先cd /home/roo/python_project/flask_mybbs/启动
+       redis-server
+       celery -A tasks.celery worker --loglevel=info
+       /bin/memcached -p 11211 -m 64m -vv -u root
+
+       cd /etc/nginx/
+       cd /home/roo/python_project/flask_mybbs/
+       uwsgi uwsgi.ini
+       
+       #使脚本具有执行权限
+       chmod+x ./start.sh 
+       #执行脚本
+       ./start.sh  

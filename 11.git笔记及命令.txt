@@ -1,0 +1,62 @@
+如何用命令将本地项目上传到git()
+	1、（先进入项目文件夹）通过命令 git init 把这个目录变成git可以管理的仓库
+	git init
+	2、把文件添加到版本库中，使用命令 git add .添加到暂存区里面去，不要忘记后面的小数点“.”，意为添加文件夹下的所有文件
+	git add .
+	3、用命令 git commit告诉Git，把文件提交到仓库。引号内为提交说明
+	git commit -m 'first commit/提交说明'
+	4、关联到远程库
+	git remote add origin 你的远程库地址如：(renzhibin rzb11300)
+	git remote add origin https://gitee.com/renzhibin/flask_mybbs.git
+	5、获取远程库与本地同步合并（如果远程库不为空必须做这一步，否则后面的提交会失败）
+	git pull --rebase origin master
+	6、把本地库的内容推送到远程，使用 git push命令，实际上是把当前分支master推送到远程。执行此命令后会要求输入用户名、密码，验证通过后即开始上传。
+	git push -u origin master
+	7*、状态查询命令
+	git status
+
+更新文件内容更新到网络服务器()
+    修改文件后，怎么提交到远程仓库
+	1.git status 查看git是否有修改内容需要提交
+	2.git add 指向需要提交的内容文件
+	3.git commit 提交到本地库
+	4.git push origin master 提交到远程仓库
+
+	下面是操作图解：
+	1.git status      查看当前状态命令,modified:图中红色的文件路径告诉你有哪些文件有修改
+	2.git add . 提交修改的全部文件 git add .    
+	git add ****/src/com/**/common/utils/base/ClassUtil.java  后面填写modified:后面的文件路径
+	3.git commit  -m "这里填写提交注释，-m也可以不写，直接用git commit"
+	4.git push origin master 至此，本地修改内容，已经完全提交打远程仓库。
+ 
+git下载代码到本地()
+    1.（先进入项目文件夹）创建文件夹，初始化git；
+      git init
+    2.添加远程仓库；
+      git remote add origin https://gitee.com/renzhibin/flask_mybbs.git
+    3.查看目录下的所有项目；
+      git remote -v
+    4.下载代码到本地；
+      git clone https://gitee.com/renzhibin/flask_mybbs.git
+
+ 从网络服务器git更新代码到本地()
+    git pull(一句命令搞定，将整个文件下载下来)，git命令在整个文件所在的目录下进行；
+
+    1.查看远程分支
+	  git remote -v
+	  origin  https://github.com/Link-yu/FlaskProject.git (fetch)
+	  origin  https://github.com/Link-yu/FlaskProject.git (push
+	2.从远程获取最新版本到本地
+	  git fetch origin master:temp
+	3.比较本地仓库与下载的temp分支
+	  git diff temp
+	  #q可以退出比较diff
+	4.合并temp分支到本地的master分支
+	  git merge temp
+	5.删除temp分支
+	  git branch -d temp
+
+
+
+
+

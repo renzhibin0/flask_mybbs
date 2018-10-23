@@ -1,0 +1,43 @@
+
+
+yum install openssl -y
+yum install openssl-devel -y
+
+安装完成后，重新安装python:
+cd python3.3
+./configure
+make install
+再次安装pip正常：yum install pip
+
+
+          图形界面安装
+
+1、如何在CentOS7下安装GUI图形界面
+      当你安装CentOS7服务器版本的时候，系统默认是不会安装GUI的图形界面程序，这个需要手动安装CentOS7 Gnome GUI包。
+
+2、在系统下使用命令安装gnome图形界面程序
+      在安装Gnome包之前，需要检查一下安装源(yum)是否正常，因为需要在yum命令来安装gnome包。
+
+      第一步：先检查yum 是否安装了，以及网络是否有网络。如果这两者都没有，先解决网络，在解决yum的安装。
+
+　　（配置步骤可以查看我的博客文章-centOS-配置网络地址-的步骤来实现 ）
+
+      第二步：在命令行下 输入下面的命令来安装Gnome包。
+
+       # yum groupinstall "GNOME Desktop" "Graphical Administration Tools"
+      第三步：更新系统的运行级别。
+
+       # ln -sf /lib/systemd/system/runlevel5.target /etc/systemd/system/default.target
+      第四步：重启机器。启动默认进入图形界面。
+
+       # reboot
+3、系统启动后直接进入图形界面
+
+
+1.redis启动方式：redis-server
+2.memcache启动sever方式：bin/memcached -p 11211 -m 64m -vv -u root
+3.memcached启动client方式： telnet 127.0.0.1 11211
+
+4.进入虚拟环境目录 cd /home/roo/virtualenv_mybbs/
+                  source .env/bin/activate
+

@@ -1,0 +1,165 @@
+0.查询已有数据库：show databases;
+
+1.使用某个数据库：use test；
+
+2.查询某个数据库中已有的表格：show employee；
+  显示引擎类型信息：show engines；
+
+3.将csv 文件导入已有表格（类型一致）：load data infile 'C:\ProgramData\MySQL\MySQL Server 5.7\Data\csvWrite.csv' --CSV文件存放路径  
+                                     into table address character set gb2312 --要将数据导入的表名（含中文名的表格）  
+                                     fields terminated by ',' optionally enclosed by '"' escaped by '"'  
+                                     lines terminated by '\r\n'; 
+
+4.显示表格内容：select * from table_name;
+  清空表：truncate table address;整体删除，不留log；
+  删除表中数据：delete * from address;逐条删除，并写入log，较慢
+
+5.显示文件目录：show variables like '%secure%';
+  显示表的引擎类型：SHOW VARIABLES LIKE '';
+  显示表的创建语句：Show create table tablename;
+  显示表的当前状态值：show table status like 'tablename'\G;
+  显示表的结构：desc persons;
+
+6.创建数据库：CREATE DATABASE database-name;
+
+7.删除数据库：DROP DATABASE dbname;
+
+8.创建新表：create table tabname(col1 type1 [not null] [primary key],col2 type2 [not null],..);
+           CREATE TABLE teacher(
+           id int primary key auto_increment, --自动增加，每个表只能有一个PRIMARY KEY约束
+           name varchar(20),
+           gender char(1),
+           age int(2),
+           birth date,
+           description varchar(100)
+           );
+  表中插入行数据：insert into teacher(name,gender,age,birth) values('liu','b',28,'1992-01-13');
+
+9.删除新表：DROP TABLE tabname;
+  清空表内容：TRUNCATE TABLE 表名称;
+  复制表：CREATE TABLE persons_backup SELECTt * FROM persons;复制表结构及数据到新表
+
+10.Alter TABLE 语句用于在已有的表中添加、修改或删除列;
+    增加一列：Alter table 表名 add column 列名 类型;
+    注：列增加后将不能删除。DB2中列加上后数据类型也不能改变，唯一能改变的是增加varchar类型的长度。
+    删除一列：ALTER TABLE table_name DROP COLUMN column_name；
+    改变列中数据类型：ALTER TABLE table_name MODIFY COLUMN column_name datatype;
+    改变列的内容：UPDATE 表名称 SET 列名称 = 新值,列名称 = 新值,列名称 = 新值 WHERE 列名称 = 某值; 更新一行多列的内容。
+    修改列名称和类型：alter table 表名 change column 旧列名 新列名 新的列类型;
+
+11.说明：添加主键： Alter table tablename add primary key(Id_P);主键列不能包含 NULL 值。
+   为多个列定义 PRIMARY KEY 约束:ALTER TABLE tablename ADD CONSTRAINT pk_PersonID PRIMARY KEY (Id_P,LastName);
+   撤销 PRIMARY KEY 约束:  ALTER TABLE Persons DROP CONSTRAINT pk_PersonID;
+　 说明：删除主键： Alter table tabname drop primary key(Id_P)
+
+12. 创建索引：create [unique] index idxname on tabname(col….);
+　　删除索引：drop index idxname
+　　注：索引是不可更改的，想更改必须删除重新建。
+
+13. 删除视图：drop view viewname；
+   创建视图：create view v1(v_1,v_2) as select ID_P,age from persons;
+   通过视图插入数据：insert into v1(v_1,v_2) values(6,30);
+
+14.说明：几个简单的基本的sql语句
+　　选择：select * from table1 where 范围;
+　　插入：insert into table1(field1,field2) values(value1,value2);
+　　删除：delete from table1 where 范围;
+　　更新：update table1 set field1=value1 where 范围;
+　　查找：select * from table1 where field1 like '%value1%'; ---like的语法很精妙，LIKE 操作符用于在 WHERE 子句中搜索列中的指定模式!
+         从 "Persons" 表中选取居住在以 "g" 结尾的城市里的人：
+          SELECT * FROM Persons WHERE City LIKE '%g';
+　　排序：select * from table1 order by field1,field2 [desc];
+　　总数：select count as totalcount from table1;
+　　求和：select sum(field1) as sumvalue from table1;
+　　平均：select avg(field1) as avgvalue from table1;
+　　最大：select max(field1) as maxvalue from table1;
+　　最小：select min(field1) as minvalue from table1;
+14.连接两个表：
+    SELECT a.runoob_id, a.runoob_author, b.runoob_count FROM runoob_tbl a INNER JOIN tcount_tbl b ON a.runoob_author = b.runoob_author;
+15.判断对象是否存在
+   判断数据库是否存在
+   if exists (select * from sys.databases where name = '数据库名') drop database [数据库名]
+
+16.判断表是否存在
+   if not exists (select * from sysobjects where [name] = ‘表名’ and xtype=’U’) 
+    begin 
+     –这里创建表 
+    end
+
+17.判断存储过程是否存在
+  if exists (select * from sysobjects where id = object_id(N’[存储过程名]’) and OBJECTPROPERTY(id, N’IsProcedure’) = 1) 
+  drop procedure [存储过程名]
+
+18.判断临时表是否存在
+   if object_id(‘tempdb..#临时表名’) is not null 
+   drop table #临时表名
+
+19.判断视图是否存在
+   –SQL Server 2000 
+   IF EXISTS (SELECT * FROM sysviews WHERE object_id = ‘[dbo].[视图名]’ 
+   –SQL Server 2005 
+   IF EXISTS (SELECT * FROM sys.views WHERE object_id = ‘[dbo].[视图名]’
+
+20.判断函数是否存在
+   if exists (select * from dbo.sysobjects where id = object_id(N’[dbo].[函数名]’) and xtype in (N’FN’, N’IF’, N’TF’)) 
+   drop function [dbo].[函数名]
+
+21.获取用户创建的对象信息
+   SELECT [name],[id],crdate FROM sysobjects where xtype='U';
+  /* xtype 的表示参数类型，通常包括如下这些 C = CHECK 约束 D = 默认值或 DEFAULT 约束 F = FOREIGN KEY 约束 L = 日志 FN = 标量函数 IF = 内嵌表函数 P =    存储过程 PK = PRIMARY KEY 约束（类型是 K） RF = 复制筛选存储过程 S = 系统表 TF = 表函数 TR = 触发器 U = 用户表 UQ = UNIQUE 约束（类型是 K） V =    视图 X = 扩展存储过程 */
+
+22.判断列是否存在
+   if exists(select * from syscolumns where id=object_id(‘表名’) and name=’列名’) 
+   alter table 表名 drop column 列名
+
+23.判断列是否自增列
+   if columnproperty(object_id(‘table’),’col’,’IsIdentity’)=1 
+   print ‘自增列’ 
+   else 
+   print ‘不是自增列’ 
+   SELECT * FROM sys.columns WHERE object_id=OBJECT_ID(‘表名’) 
+   AND is_identity=1
+
+24.判断表中是否存在索引
+   if exists(select * from sysindexes where id=object_id(‘表名’) and name=’索引名’) 
+   print ‘存在’ 
+   else 
+   print ‘不存在
+
+25.结合合计函数，根据一个或多个列对结果集进行分组（查找订单总金额少于 2000 的客户）：
+   SELECT Customer,SUM(OrderPrice) FROM Orders
+   GROUP BY Customer
+   HAVING SUM(OrderPrice)<2000
+   希望查找客户 "Bush" 或 "Adams" 拥有超过 1500 的订单总金额：
+   SELECT Customer,SUM(OrderPrice) FROM Orders
+   WHERE Customer='Bush' OR Customer='Adams'
+   GROUP BY Customer
+   HAVING SUM(OrderPrice)>1500	
+
+26.LCASE 函数把字段的值转换为小写：
+   SELECT LCASE(LastName) as LastName,FirstName FROM Persons;
+   UCASE 函数把字段的值转换为大写：
+   SELECT UCASE(LastName) as LastName,FirstName FROM Persons;
+
+27.LEN GTH函数返回文本字段中值的长度
+   SELECT LENGTH(City) as LengthOfCity FROM Persons;
+
+28.NOW 函数返回当前的日期和时间：
+   SELECT NOW() FROM persons;
+   SELECT lastname,NOW() AS nowdate FROM persons;
+
+29.FORMAT 函数用于对字段的显示进行格式化(用不同的格式显示日期/时间):http://www.w3school.com.cn/sql/func_date_format.asp
+    select date_format(now(),'%Y-%m-%d %h:%i %p') FROM PERSONS;
+    NOW()	  返回当前的日期和时间
+    CURDATE()	  返回当前的日期
+    CURTIME()	  返回当前的时间
+    DATE()	  提取日期或日期/时间表达式的日期部分
+    EXTRACT()	  返回日期/时间按的单独部分
+    DATE_ADD()	  给日期添加指定的时间间隔
+    DATE_SUB()	  从日期减去指定的时间间隔
+    DATEDIFF()	  返回两个日期之间的天数
+    DATE_FORMAT() 用不同的格式显示日期/时间
+
+30.
+
+

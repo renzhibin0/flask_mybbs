@@ -1,0 +1,47 @@
+1.memcache的简介
+	Memcached是一个自由开源的，高性能，分布式内存对象缓存系统。
+	Memcached是一种基于内存的key-value存储，用来存储小块的任意数据（字符串、对象）。
+	这些数据可以是数据库调用、API调用或者是页面渲染的结果。
+
+	Memcached简洁而强大。它的简洁设计便于快速开发，减轻开发难度，解决了大数据量缓存的很多问题。它的API兼容大部分流行的开发语言。
+	本质上，它是一个简洁的key-value存储系统，一个value最大只支持1MB。
+	一般的使用目的是，通过缓存数据库查询结果，减少数据库访问次数，以提高动态Web应用的速度、提高可扩展性。
+    
+    在简单的Key/Value应用场景（例如缓存），Memcached拥有更高的读写性能；
+
+	Linux启动 /bin/memcached -p 11211 -m 64m -vv -u root
+	Windows下作为进程自动启动
+
+	客户端启动：telnet 127.0.0.1 11211
+    
+2.set 命令的基本语法格式如下：
+
+	set key flags exptime bytes [noreply] 
+	value 
+
+	参数说明如下：
+	key：键值 key-value 结构中的 key，用于查找缓存值。
+	flags：可以包括键值对的整型参数，客户机使用它存储关于键值对的额外信息 。
+	exptime：在缓存中保存键值对的时间长度（以秒为单位，0 表示永远）
+	bytes：在缓存中存储的字节数
+	noreply（可选）： 该参数告知服务器不需要返回数据
+	value：存储的值（始终位于第二行）（可直接理解为key-value结构中的value）
+	
+	实例
+	以下实例中我们设置：
+	key → runoob
+	flag → 0
+	exptime → 900 (以秒为单位)
+	bytes → 9 (数据存储的字节数)
+	value → memcached
+
+	set runoob 0 900 9
+	memcached
+
+	STORED
+
+	get runoob
+	VALUE runoob 0 9
+	memcached
+
+	END
